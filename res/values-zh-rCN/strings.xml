@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Ant Demo</string>
+    <string name="action_settings">设置</string>
+    <string name="package_name">包名</string>
+    <string name="umeng_channel">友盟渠道</string>
+    <string name="version_code">版本数字</string>
+    <string name="version_name">版本名</string>
+
+</resources>

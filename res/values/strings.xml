@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Ant Demo</string>
+    <string name="action_settings">Settings</string>
+    <string name="package_name">Package</string>
+    <string name="umeng_channel">umeng channel</string>
+    <string name="version_code">Version code</string>
+    <string name="version_name">Version name</string>
+
+</resources>
