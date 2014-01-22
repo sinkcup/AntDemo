@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="MainActivity" default="help">
+<project name="AntDemo" default="help">
+    <target name="auto" depends="clean">
+        <dirname property="current.dir" file="./"/>
+        <echo>${current.dir}</echo>
+        <dirname property="thisDir" file="${ant.file}"/>
+        <echo message="${thisDir}"/>
+        <property name="projectTmpDir" value="${thisDir}Tmp"/>
+        <copy todir="${projectTmpDir}" overwrite="true">
+            <fileset dir="./">
+                <exclude name=".*" />
+                <exclude name=".*/*" />
+            </fileset>
+        </copy>
+        <!-- 解析AndroidManifest.xml 获得包名 -->
+        <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
+        <echo message="${manifest.package}" />
+        <property name="package" value="com.example" />
+        <replace dir="${projectTmpDir}" excludes="build.xml" token="${manifest.package}" value="${package}">
+        </replace>
+    </target>
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
