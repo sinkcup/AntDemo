@@ -32,6 +32,8 @@
                 <exclude name=".*/*" />
             </fileset>
         </copy>
+
+        <!-- 检查参数或配置中是否指定了包名 -->
         <condition property="has.package">
             <isset property="package" />
         </condition>
@@ -39,13 +41,16 @@
         <!-- 解析AndroidManifest.xml 获得包名 -->
         <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
 
+        <!-- 修改包名 -->
         <antcall target="-change-package-name">
         </antcall>
 
+        <!-- 检查参数或配置中是否指定了友盟渠道 -->
         <condition property="has.umeng.channel">
             <isset property="UMENG_CHANNEL" />
         </condition>
 
+        <!-- 修改友盟渠道 -->
         <antcall target="-change-umeng-channel">
         </antcall>
     </target>
@@ -63,5 +68,25 @@
            match="&lt;meta\-data(\s+)android:name=&quot;UMENG_CHANNEL&quot;(\s+)android:value=&quot;[a-zA-Z0-9]+&quot;"
            replace="&lt;meta\-data android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;${UMENG_CHANNEL}&quot;"
         />
+    </target>
+    
+    <!-- 使用时间戳作为版本数字，使用日期作为版本名，比如Ubuntu 13.04使用yy.MM，MIUI 4.1.17使用年的最后一位.M.d
+        本脚本使用 yy.M.d.HHmm，比如14.1.30.1800 表示 14年1月30日18点00分。
+        由于开发时经常发布版本，所以精确到秒。可能几秒前刚打的包，改了字符串，又重新打包。
+    -->
+    <target name="grant-version">
+        <script language="javascript">
+            <![CDATA[
+                property = project.setProperty("now",Math.floor((new Date()).getTime()/1000));
+            ]]>
+            </script>
+            <tstamp>
+                <format property="versionCode"
+                      pattern="${now}" />
+                <format property="versionName"
+                      pattern="yy.M.d.HHmmss" />
+            </tstamp>
+            <echo message="versionCode: ${versionCode}" />
+            <echo message="versionName: ${versionName}" />
     </target>
 </project>
