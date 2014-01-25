@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="custom_rules">
+    <target name="auto-debug" depends="auto">
+        <antcall target="auto">
+        </antcall>
+
+        <exec dir="${projectTmpDir}" executable="ant">
+            <arg value="debug" />
+        </exec>
+    </target>
+
+    <target name="auto-release" depends="auto">
+        <property name="UMENG_CHANNEL" value="release" />
+
+        <antcall target="auto">
+        </antcall>
+
+        <exec dir="${projectTmpDir}" executable="ant">
+            <arg value="release" />
+        </exec>
+    </target>
+
+    <target name="auto" depends="clean">
+        <!-- 复制项目到临时目录，避免替换打包影响本目录代码 -->
+        <dirname property="thisDir" file="${ant.file}" />
+        <property name="projectTmpDir" value="${thisDir}Tmp" />
+        <delete dir="${projectTmpDir}" />
+        <copy todir="${projectTmpDir}" overwrite="true">
+            <fileset dir="./">
+                <!-- 忽略隐藏文件 -->
+                <exclude name=".*" />
+                <exclude name=".*/*" />
+            </fileset>
+        </copy>
+        <condition property="has.package">
+            <isset property="package" />
+        </condition>
+
+        <!-- 解析AndroidManifest.xml 获得包名 -->
+        <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
+
+        <antcall target="-change-package-name">
+        </antcall>
+
+        <condition property="has.umeng.channel">
+            <isset property="UMENG_CHANNEL" />
+        </condition>
+
+        <antcall target="-change-umeng-channel">
+        </antcall>
+    </target>
+
+    <target name="-change-package-name" if="has.package">
+        <echo message="old package: ${manifest.package}" />
+        <echo message="new package: ${package}" />
+        <replace dir="${projectTmpDir}" excludes="build.xml" token="${manifest.package}" value="${package}">
+        </replace>
+    </target>
+    
+    <target name="-change-umeng-channel" if="has.umeng.channel">
+        <echo message="new UMENG_CHANNEL : ${UMENG_CHANNEL}" />
+        <replaceregexp file="${projectTmpDir}/AndroidManifest.xml"
+           match="&lt;meta\-data(\s+)android:name=&quot;UMENG_CHANNEL&quot;(\s+)android:value=&quot;[a-zA-Z0-9]+&quot;"
+           replace="&lt;meta\-data android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;${UMENG_CHANNEL}&quot;"
+        />
+    </target>
+</project>

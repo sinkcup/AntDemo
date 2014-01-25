@@ -1,37 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AntDemo" default="help">
-    <target name="auto" depends="clean">
-        <!-- 复制项目到临时目录，避免替换打包影响本目录代码 -->
-        <dirname property="thisDir" file="${ant.file}" />
-        <property name="projectTmpDir" value="${thisDir}Tmp" />
-        <copy todir="${projectTmpDir}" overwrite="true">
-            <fileset dir="./">
-                <!-- 忽略隐藏文件 -->
-                <exclude name=".*" />
-                <exclude name=".*/*" />
-            </fileset>
-        </copy>
-        <condition property="issetPackage">
-            <isset property="package" />
-        </condition>
-
-        <!-- 解析AndroidManifest.xml 获得包名 -->
-        <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
-
-        <antcall target="replace-package-name">
-        </antcall>
-
-        <exec dir="${projectTmpDir}" executable="ant">
-            <arg value="debug" />
-        </exec>
-    </target>
-
-    <target name="replace-package-name" if="issetPackage">
-        <echo message="old package: ${manifest.package}" />
-        <echo message="new package: ${package}" />
-        <replace dir="${projectTmpDir}" excludes="build.xml" token="${manifest.package}" value="${package}">
-        </replace>
-    </target>
+<project name="MainActivity" default="help">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
