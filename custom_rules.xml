@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="custom_rules">
-    <target name="auto-debug" depends="auto">
-        <antcall target="auto">
+    <target name="auto-debug">
+        <property name="build.last.is.packaging.debug" value="true" />
+        <propertyfile file="auto.prop">
+            <entry key="build.last.is.packaging.debug" value="${build.last.is.packaging.debug}" />
+        </propertyfile>
+        <antcall target="-auto">
         </antcall>
-
-        <exec dir="${projectTmpDir}" executable="ant">
-            <arg value="debug" />
-        </exec>
     </target>
 
-    <target name="auto-release" depends="auto">
-        <property name="UMENG_CHANNEL" value="release" />
-
-        <antcall target="auto">
+    <target name="auto-release">
+        <antcall target="-auto">
         </antcall>
-
-        <exec dir="${projectTmpDir}" executable="ant">
-            <arg value="release" />
-        </exec>
     </target>
 
-    <target name="auto" depends="clean">
+    <target name="-auto" depends="clean">
         <!-- 复制项目到临时目录，避免替换打包影响本目录代码 -->
-        <dirname property="thisDir" file="${ant.file}" />
-        <property name="projectTmpDir" value="${thisDir}Tmp" />
-        <delete dir="${projectTmpDir}" />
-        <copy todir="${projectTmpDir}" overwrite="true">
+        <dirname property="auto.here.dir" file="${ant.file}" />
+        <property name="auto.project.tmp.dir" value="${auto.here.dir}Tmp" />
+        <delete dir="${auto.project.tmp.dir}" />
+        <copy todir="${auto.project.tmp.dir}" overwrite="true">
             <fileset dir="./">
                 <!-- 忽略隐藏文件 -->
                 <exclude name=".*" />
@@ -33,60 +27,104 @@
             </fileset>
         </copy>
 
-        <!-- 检查参数或配置中是否指定了包名 -->
-        <condition property="has.package">
-            <isset property="package" />
-        </condition>
-
         <!-- 解析AndroidManifest.xml 获得包名 -->
         <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
+        <propertyfile file="auto.prop">
+            <entry key="auto.package" value="${manifest.package}" />
+            <entry key="auto.final.versionCode" value="${manifest.android:versionCode}" />
+            <entry key="auto.final.versionName" value="${manifest.android:versionName}" />
+        </propertyfile>
+
+        <!-- 检查参数或配置中是否指定了包名 -->
+        <condition property="auto.has.package">
+            <isset property="package" />
+        </condition>
 
         <!-- 修改包名 -->
         <antcall target="-change-package-name">
         </antcall>
 
-        <!-- 检查参数或配置中是否指定了友盟渠道 -->
-        <condition property="has.umeng.channel">
-            <isset property="UMENG_CHANNEL" />
-        </condition>
-
         <!-- 修改友盟渠道 -->
         <antcall target="-change-umeng-channel">
         </antcall>
+
+        <condition property="auto.version.is.time">
+            <equals arg1="${version}" arg2="time" />
+        </condition>
+
+        <!-- 修改版本号 -->
+        <antcall target="-change-version">
+        </antcall>
+
+        <condition property="build.last.target" value="debug" else="release">
+            <istrue value="${build.last.is.packaging.debug}" />
+        </condition>
+
+        <exec dir="${auto.project.tmp.dir}" executable="ant">
+            <arg value="${build.last.target}" />
+        </exec>
+
+        <property file="auto.prop" />
+        <echo message="package: ${auto.package}" />
+        <echo message="UMENG_CHANNEL : ${auto.umeng.channel}" />
+        <echo message="versionCode: ${auto.final.versionCode}" />
+        <echo message="versionName: ${auto.final.versionName}" />
     </target>
 
-    <target name="-change-package-name" if="has.package">
+    <target name="-change-package-name" if="auto.has.package">
+        <propertyfile file="auto.prop">
+            <entry key="auto.package" value="${package}" />
+        </propertyfile>
+
         <echo message="old package: ${manifest.package}" />
         <echo message="new package: ${package}" />
-        <replace dir="${projectTmpDir}" excludes="build.xml" token="${manifest.package}" value="${package}">
+        <replace dir="${auto.project.tmp.dir}" excludes="build.xml" token="${manifest.package}" value="${package}">
         </replace>
     </target>
     
-    <target name="-change-umeng-channel" if="has.umeng.channel">
-        <echo message="new UMENG_CHANNEL : ${UMENG_CHANNEL}" />
-        <replaceregexp file="${projectTmpDir}/AndroidManifest.xml"
+    <target name="-change-umeng-channel">
+        <condition property="UMENG_CHANNEL" value="debug" else="release">
+            <istrue value="${build.last.is.packaging.debug}" />
+        </condition>
+        <propertyfile file="auto.prop">
+            <entry key="auto.umeng.channel" value="${UMENG_CHANNEL}" />
+        </propertyfile>
+        <echo message="UMENG_CHANNEL : ${UMENG_CHANNEL}" />
+        <replaceregexp file="${auto.project.tmp.dir}/AndroidManifest.xml"
            match="&lt;meta\-data(\s+)android:name=&quot;UMENG_CHANNEL&quot;(\s+)android:value=&quot;[a-zA-Z0-9]+&quot;"
            replace="&lt;meta\-data android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;${UMENG_CHANNEL}&quot;"
         />
     </target>
     
     <!-- 使用时间戳作为版本数字，使用日期作为版本名，比如Ubuntu 13.04使用yy.MM，MIUI 4.1.17使用年的最后一位.M.d
-        本脚本使用 yy.M.d.HHmm，比如14.1.30.1800 表示 14年1月30日18点00分。
-        由于开发时经常发布版本，所以精确到秒。可能几秒前刚打的包，改了字符串，又重新打包。
+        本脚本使用 yy.M.d.HHmm，比如14.1.1.1800 表示 14年1月1日18点00分。
+        由于开发时经常发布版本，所以精确到分钟。可能几分钟前刚打的包，改了字符串，又重新打包。
     -->
-    <target name="grant-version">
+    <target name="-change-version" if="auto.version.is.time">
         <script language="javascript">
             <![CDATA[
                 property = project.setProperty("now",Math.floor((new Date()).getTime()/1000));
             ]]>
-            </script>
-            <tstamp>
-                <format property="versionCode"
-                      pattern="${now}" />
-                <format property="versionName"
-                      pattern="yy.M.d.HHmmss" />
-            </tstamp>
-            <echo message="versionCode: ${versionCode}" />
-            <echo message="versionName: ${versionName}" />
+        </script>
+        <tstamp>
+            <format property="auto.final.versionCode"
+                  pattern="${now}" />
+            <format property="auto.final.versionName"
+                  pattern="yy.M.d.HHmm" />
+        </tstamp>
+        <propertyfile file="auto.prop">
+            <entry key="auto.final.versionCode" value="${auto.final.versionCode}" />
+            <entry key="auto.final.versionName" value="${auto.final.versionName}" />
+        </propertyfile>
+        <echo message="versionCode: ${auto.final.versionCode}" />
+        <echo message="versionName: ${auto.final.versionName}" />
+        <replaceregexp file="${auto.project.tmp.dir}/AndroidManifest.xml"
+           match="android:versionCode=&quot;(\d+)&quot;"
+           replace="android:versionCode=&quot;${auto.final.versionCode}&quot;"
+        />
+        <replaceregexp file="${auto.project.tmp.dir}/AndroidManifest.xml"
+           match="android:versionName=&quot;([a-zA-Z0-9\.]+)&quot;"
+           replace="android:versionName=&quot;${auto.final.versionName}&quot;"
+        />
     </target>
 </project>
