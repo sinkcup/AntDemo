@@ -3,6 +3,8 @@ AntDemo
 
 ant auto build Android Package
 
+Android ant 自动打包脚本：自动替换友盟渠道、版本号、包名
+
 
 打包时自动更换友盟渠道
 ----------------------
