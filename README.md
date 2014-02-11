@@ -54,3 +54,26 @@ debug与release签名
     ant auto-release
 
 使用release签名，请修改ant.properties中的路径、密码等等，参考http://developer.android.com/tools/building/building-cmdline.html#ReleaseMode
+
+
+如何集成到我的项目里
+--------------------
+
+前提：了解android官方文档，在项目目录中执行ant debug能打包，比如常见的打包步骤：
+
+    android update project -p . -s -t "android-19"
+    ant debug
+
+如果ant debug打包能通过，则可以使用下面的自动打包。
+
+下载custom_rules.xml，放到项目目录，然后执行：
+
+    ant auto-debug -Dversion=time
+
+即可。
+
+如果想打release包，下载ant.properties，修改其中的密码等配置，然后执行：
+
+    ant auto-release -DUMENG_CHANNEL=googlePlayStore -Dpackage=com.example.ant.beta
+
+即可。
