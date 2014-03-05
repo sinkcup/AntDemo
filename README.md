@@ -72,7 +72,7 @@ debug与release签名
 
     ant auto-debug -Dversion=time
 
-即可，生成的包在../Project1Tmp/bin/中。
+即可，生成的包在./bin/中。
 
 如果想打release包，下载ant.properties，修改其中的密码等配置，然后执行：
 

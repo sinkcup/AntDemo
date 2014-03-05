@@ -14,7 +14,7 @@
         </antcall>
     </target>
 
-    <target name="-auto" depends="clean">
+    <target name="-auto">
         <!-- 复制项目到临时目录，避免替换打包影响本目录代码 -->
         <dirname property="auto.here.dir" file="${ant.file}" />
         <property name="auto.project.tmp.dir" value="${auto.here.dir}Tmp" />
@@ -29,10 +29,12 @@
 
         <!-- 解析AndroidManifest.xml 获得包名 -->
         <xmlproperty file="AndroidManifest.xml" collapseAttributes="true" />
+        <!-- 写入配置文件 -->
         <propertyfile file="auto.prop">
             <entry key="auto.package" value="${manifest.package}" />
             <entry key="auto.final.versionCode" value="${manifest.android:versionCode}" />
             <entry key="auto.final.versionName" value="${manifest.android:versionName}" />
+            <entry key="auto.project.tmp.dir" value="${auto.project.tmp.dir}" />
         </propertyfile>
 
         <!-- 检查参数或配置中是否指定了包名 -->
@@ -60,9 +62,14 @@
             <istrue value="${build.last.is.packaging.debug}" />
         </condition>
 
+        <!-- 执行ant debug或者ant release进行打包 -->
         <exec dir="${auto.project.tmp.dir}" executable="ant">
             <arg value="${build.last.target}" />
         </exec>
+
+        <!-- 复制打好的包 到 本目录下 -->
+        <antcall target="-cp-out-final-file">
+        </antcall>
 
         <property file="auto.prop" />
         <echo message="package: ${auto.package}" />
@@ -127,4 +134,15 @@
            replace="android:versionName=&quot;${auto.final.versionName}&quot;"
         />
     </target>
+
+    <target name="-cp-out-final-file">
+        <property file="auto.prop" />
+        <condition property="build.last.target" value="debug" else="release">
+            <istrue value="${build.last.is.packaging.debug}" />
+        </condition>
+        
+        <copy file="${auto.project.tmp.dir}/${out.dir}/${ant.project.name}-${build.last.target}.apk" tofile="${out.absolute.dir}/${auto.package}-${auto.final.versionName}-${auto.umeng.channel}-${build.last.target}.apk" overwrite="true">
+        </copy>
+    </target>
+
 </project>
