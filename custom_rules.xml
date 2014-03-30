@@ -87,6 +87,10 @@
         <echo message="new package: ${package}" />
         <replace dir="${auto.project.tmp.dir}" excludes="build.xml" token="${manifest.package}" value="${package}">
         </replace>
+        <script language="javascript">
+            project.setProperty("original.R.path", project.getProperty("auto.project.tmp.dir") + "\\gen\\" + project.getProperty("manifest.package").replaceAll("\\.", "\\\\"));
+        </script>
+        <delete dir="${original.R.path}" />
     </target>
     
     <target name="-change-umeng-channel">
