@@ -97,7 +97,7 @@
             <entry key="auto.umeng.channel" value="${UMENG_CHANNEL}" />
         </propertyfile>
         <echo message="UMENG_CHANNEL : ${UMENG_CHANNEL}" />
-        <replaceregexp file="${auto.project.tmp.dir}/AndroidManifest.xml"
+        <replaceregexp encoding="utf-8" file="${auto.project.tmp.dir}/AndroidManifest.xml"
            match="&lt;meta\-data(\s+)android:name=&quot;UMENG_CHANNEL&quot;(\s+)android:value=&quot;[a-zA-Z0-9]+&quot;"
            replace="&lt;meta\-data android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;${UMENG_CHANNEL}&quot;"
         />
