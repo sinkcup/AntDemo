@@ -11,10 +11,13 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.view.Menu;
 import android.widget.TextView;
 
+/**
+ * main
+ */
 public class MainActivity extends Activity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UmengUpdateAgent.update(this);
         setContentView(R.layout.activity_main);
@@ -44,18 +47,18 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public final boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
-    public void onPause() {
+    public final void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
     }
 
-    public void onResume() {
+    public final void onResume() {
         super.onResume();
         MobclickAgent.onResume(this);
     }
