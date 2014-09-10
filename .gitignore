@@ -9,6 +9,8 @@
 *.class
 
 # generated files
+build.xml
+proguard-project.txt
 bin/
 gen/
 
