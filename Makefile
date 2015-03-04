@@ -8,7 +8,7 @@ timestamp = $(shell date +%s)
 install:
 	@for lib in $(libs); do \
 		echo $$lib; \
-		cd $$lib; mv build.xml build.xml-bak-$(timestamp) 2>/dev/null; android update project -p . -s -t "$(target)"; ant clean; \
+		cp Makefile $$lib; cd $$lib; make; \
 		cd $(this_dir); \
 	done
 	@mv build.xml build.xml-bak-$(timestamp) 2>/dev/null; android update project -p . -s -t "$(target)"; ant clean;
